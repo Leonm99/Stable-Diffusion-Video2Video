@@ -123,7 +123,7 @@ class Script(scripts.Script):
             height = do_round(res_parts[1])
 
         path_prompt = sanitize(prompts, 1)
-        dateiname = path_prompt[:20]
+        dateiname = path_prompt[:50]
         print(dateiname)
         stamm = os.getcwd() + "\\outputs\\img2img-videos\\"
         if not os.path.exists(stamm):
