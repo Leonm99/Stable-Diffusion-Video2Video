@@ -122,9 +122,13 @@ class Script(scripts.Script):
             width = do_round(res_parts[0])
             height = do_round(res_parts[1])
 
+<<<<<<< HEAD
         path_prompt = sanitize(prompts, 1)
         dateiname = path_prompt[:20]
         print(dateiname)
+=======
+        dateiname = positive_prompt.remove("()", "")
+>>>>>>> 02ba9a72887cc224f64a63aebec9b82435c35706
         stamm = os.getcwd() + "\\outputs\\img2img-videos\\"
         if not os.path.exists(stamm):
             os.mkdir(stamm)
@@ -211,7 +215,8 @@ class Script(scripts.Script):
                 all_images.append(init_img)
 
             # Save current image to folder manually, with specific name we can iterate over.
-            init_img.save(os.path.join(unterordner, f"{dateiname}_{i:05}.png"))
+            init_img.save(os.path.join(
+                unterordner, f"{dateiname}_{i+1:05}.png"))
 
             processed = Processed(p, all_images, initial_seed, initial_info)
 
