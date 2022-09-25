@@ -19,8 +19,9 @@ from modules.sd_samplers import samplers
 from modules.shared import cmd_opts, opts, state
 from PIL import Image, ImageFilter
 
-
 # remove dumb stuff from prompt
+
+
 def sanitize(prompt):
     whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ')
     tmp = ''.join(filter(whitelist.__contains__, prompt))
@@ -29,15 +30,14 @@ def sanitize(prompt):
 # input video gets chopped down to frames
 
 
-def dump_frames(filepath, orig_path):
+def dump_frames(filepath, orig_path, x, y):
 
     image_path = os.path.join(filepath, "temp_%05d.png")
 
     cmd = [
         'ffmpeg',
         '-i', orig_path,
-        '-vf', 'scale=512:512',
-        # '_%05d.png',
+        '-vf', 'scale=' + str(x) + ':' + str(y),
         str(image_path)
 
 
@@ -51,9 +51,10 @@ def dump_frames(filepath, orig_path):
 
     # final images get stitched back to mp4
 
+# create output video
 
-def make_mp4(filepath, filename):
 
+def make_mp4(filepath, filename, x, y):
     image_path = os.path.join(filepath, f"{str(filename)}_%05d.png")
     mp4_path = os.path.join(filepath, f"{str(filename)}.mp4")
 
@@ -63,7 +64,7 @@ def make_mp4(filepath, filename):
         '-vcodec', 'png',
         '-start_number', str(0),
         '-i', str(image_path),
-        '-vf', 'scale=640:480',
+        '-vf', 'scale=' + str(x) + ':' + str(y),
         str(mp4_path)
     ]
     process = subprocess.Popen(
@@ -83,30 +84,28 @@ class Script(scripts.Script):
     def title(self):
         return "img2img video test"
 
-        # makes this script only visible for img2img
-
+    # makes this script only visible for img2img
     def show(self, is_img2img):
         return is_img2img
 
-        # ui elements
-
+    # ui elements
     def ui(self, is_img2img):
-
+        res = gr.Textbox(label="resolution (put in like this x:y)",
+                         visible=True, lines=1, value="640:480")
         input = gr.File(label="Input Video", type="file")
         prompts = gr.Textbox(label="prompt", visible=True, lines=5, value="")
-        return [prompts, input]
+        return [prompts, input, res]
 
-        # here happens the good stuff
+    # here happens the good stuff
+    def run(self, p, prompts, input, res):
 
-    def run(self, p, prompts, input):
-
-        p.do_not_save_samples = True
-        p.do_not_save_grid = True
-        #p.width = 480
-        #p.height = 360
+        resolution = []
+        for r in res.splitlines():
+            lineparts = r.split(":")
+            resolution.append(lineparts[0])
+            resolution.append(lineparts[1])
 
         dateiname = sanitize(prompts)
-
         stamm = os.getcwd() + "\\outputs\\img2img-videos\\"
         if not os.path.exists(stamm):
             os.mkdir(stamm)
@@ -116,12 +115,15 @@ class Script(scripts.Script):
             os.mkdir(unterordner)
         half_path = unterordner + "temp_"
 
-        # get frames from input video
-        dump_frames(unterordner, input.name)
+        # extract frames from input video
+        dump_frames(unterordner, input.name, resolution[0], resolution[1])
 
-        # get fps by literally counting the images... i know its stupid
+        # get fps by literally counting the images... i know this is stupid
         loops = len([name for name in os.listdir(unterordner)
-                    if os.path.isfile(os.path.join(unterordner, name))])
+                     if os.path.isfile(os.path.join(unterordner, name))])
+
+        p.do_not_save_samples = True
+        p.do_not_save_grid = True
 
         processing.fix_seed(p)
         batch_count = p.n_iter
@@ -138,7 +140,8 @@ class Script(scripts.Script):
         grids = []
         all_images = []
         state.job_count = int(loops) * batch_count
-
+        #p.width = int(resolution[0])
+        #p.height = int(resolution[1])
         p.init_images[0] = Image.open(unterordner + "temp_00001.png")
         initial_color_corrections = [
             processing.setup_color_correction(p.init_images[0])]
@@ -147,7 +150,7 @@ class Script(scripts.Script):
         for i in range(int(loops)):
 
             number_string = str(i)
-
+            print(p.seed)
             if len(number_string) > 4:
                 full_path = half_path + str(i) + ".png"
             elif len(number_string) > 3:
@@ -180,7 +183,7 @@ class Script(scripts.Script):
 
             p.init_images = [init_img]
             p.seed = processed.seed
-
+# test
             # Save every seconds worth of frames to the output set displayed in UI
             if (i % int(30) == 0):
                 all_images.append(init_img)
@@ -193,5 +196,5 @@ class Script(scripts.Script):
         print("All done.")
 
         processed = Processed(p, all_images, initial_seed, initial_info)
-        make_mp4(unterordner, dateiname)
+        make_mp4(unterordner, dateiname, resolution[0], resolution[1])
         return processed
