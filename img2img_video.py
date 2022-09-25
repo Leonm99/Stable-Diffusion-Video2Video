@@ -55,7 +55,7 @@ def dump_frames(filepath, orig_path, x, y):
 
 
 # create output video
-def make_mp4(filepath, filename, x, y):
+def make_mp4(filepath, filename, x, y, keep):
     image_path = os.path.join(filepath, f"{str(filename)}_%05d.png")
     mp4_path = os.path.join(filepath, f"{str(filename)}.mp4")
 
@@ -75,8 +75,9 @@ def make_mp4(filepath, filename, x, y):
         print(stderr)
         raise RuntimeError(stderr)
 
-    for ifile in glob.glob(filepath + "/*.png"):
-        os.remove(ifile)
+    if keep == false:
+        for ifile in glob.glob(filepath + "/*.png"):
+            os.remove(ifile)
 
 
 class Script(scripts.Script):
@@ -91,15 +92,17 @@ class Script(scripts.Script):
 
     # ui elements
     def ui(self, is_img2img):
+        keep = gr.Checkbox(label='Keep generated pngs?', value=False)
         res = gr.Textbox(label="Resolution: (Put in like this x:y)",
                          visible=True, lines=1, value="640:480")
         input = gr.File(label="Input Video:", type="file")
         prompts = gr.Textbox(
             label="Prompt: (Seperate Positive and Negative by using ' | ') ", visible=True, lines=5, value="")
-        return [prompts, input, res]
+
+        return [prompts, input, res, keep]
 
     # here happens the good stuff
-    def run(self, p, prompts, input, res):
+    def run(self, p, prompts, input, res, keep):
 
         sanitize(prompts)
         for l in prompts.splitlines():
@@ -207,5 +210,5 @@ class Script(scripts.Script):
 
         processed = Processed(p, all_images, initial_seed, initial_info)
         make_mp4(unterordner, dateiname, width,
-                 height)
+                 height, keep)
         return processed
