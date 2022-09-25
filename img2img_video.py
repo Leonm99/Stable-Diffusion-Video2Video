@@ -76,7 +76,7 @@ def make_mp4(filepath, filename, x, y, keep):
         print(stderr)
         raise RuntimeError(stderr)
 
-    if keep == false:
+    if keep == False:
         for ifile in glob.glob(filepath + "/*.png"):
             os.remove(ifile)
 
@@ -119,7 +119,7 @@ class Script(scripts.Script):
             width = do_round(res_parts[0])
             height = do_round(res_parts[1])
 
-        dateiname = positive_prompt
+        dateiname = positive_prompt.remove("()", "")
         stamm = os.getcwd() + "\\outputs\\img2img-videos\\"
         if not os.path.exists(stamm):
             os.mkdir(stamm)
@@ -206,7 +206,8 @@ class Script(scripts.Script):
                 all_images.append(init_img)
 
             # Save current image to folder manually, with specific name we can iterate over.
-            init_img.save(os.path.join(unterordner, f"{dateiname}_{i:05}.png"))
+            init_img.save(os.path.join(
+                unterordner, f"{dateiname}_{i+1:05}.png"))
 
             processed = Processed(p, all_images, initial_seed, initial_info)
 
