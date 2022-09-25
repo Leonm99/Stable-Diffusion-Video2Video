@@ -1,1 +1,1 @@
-# Stable-Diffusion-img2img-animation
+# Stable-Diffusion-img2img-videos
