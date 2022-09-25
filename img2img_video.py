@@ -27,11 +27,15 @@ def do_round(x, base=64):
 # remove dumb stuff from prompt
 
 
-def sanitize(prompt):
-    whitelist = set(
-        'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _ ( ) |')
-    tmp = ''.join(filter(whitelist.__contains__, prompt))
-    return tmp.replace(' ', '_')
+def sanitize(prompt, usage):
+    if usage == 0:
+        whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _ ( ) | .')
+        tmp = ''.join(filter(whitelist.__contains__, prompt))
+        return tmp.replace(' ', '_')
+    else:
+        whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _')
+        tmp = ''.join(filter(whitelist.__contains__, prompt))
+        return tmp.replace(' ', '_')
 
 
 # input video gets chopped down to frames
@@ -76,7 +80,7 @@ def make_mp4(filepath, filename, x, y, keep):
         print(stderr)
         raise RuntimeError(stderr)
 
-    if keep == false:
+    if keep == False:
         for ifile in glob.glob(filepath + "/*.png"):
             os.remove(ifile)
 
@@ -105,8 +109,7 @@ class Script(scripts.Script):
     # here happens the good stuff
     def run(self, p, prompts, input, res, keep):
 
-        prompts = sanitize(prompts)
-        print(prompts)
+        prompts = sanitize(prompts, 0)
         for l in prompts.splitlines():
             prompt_parts = l.split("|", 1)
             print(prompt_parts[0])
@@ -119,7 +122,9 @@ class Script(scripts.Script):
             width = do_round(res_parts[0])
             height = do_round(res_parts[1])
 
-        dateiname = positive_prompt
+        path_prompt = sanitize(prompts, 1)
+        dateiname = path_prompt[:20]
+        print(dateiname)
         stamm = os.getcwd() + "\\outputs\\img2img-videos\\"
         if not os.path.exists(stamm):
             os.mkdir(stamm)
