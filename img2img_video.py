@@ -28,7 +28,8 @@ def do_round(x, base=64):
 
 
 def sanitize(prompt):
-    whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    whitelist = set(
+        'abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _ ( ) |')
     tmp = ''.join(filter(whitelist.__contains__, prompt))
     return tmp.replace(' ', '_')
 
@@ -84,7 +85,7 @@ class Script(scripts.Script):
 
     # this gets shown in the scripts drop down
     def title(self):
-        return "img2img video test"
+        return "img2img video"
 
     # makes this script only visible for img2img
     def show(self, is_img2img):
@@ -104,9 +105,12 @@ class Script(scripts.Script):
     # here happens the good stuff
     def run(self, p, prompts, input, res, keep):
 
-        sanitize(prompts)
+        prompts = sanitize(prompts)
+        print(prompts)
         for l in prompts.splitlines():
-            prompt_parts = l.split("|")
+            prompt_parts = l.split("|", 1)
+            print(prompt_parts[0])
+            print(prompt_parts[1])
             positive_prompt = prompt_parts[0]
             negative_prompt = prompt_parts[1]
 
