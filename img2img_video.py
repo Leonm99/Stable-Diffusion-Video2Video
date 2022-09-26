@@ -63,7 +63,8 @@ def make_mp4(filepath, filename, x, y, keep):
         '-vcodec', 'png',
         '-start_number', str(0),
         '-i', str(image_path),
-        '-vf', 'scale=' + str(x) + ':' + str(y),
+        '-vf format=yuv420p',
+        'scale=' + str(x) + ':' + str(y),
         str(mp4_path)
     ]
     process = subprocess.Popen(
