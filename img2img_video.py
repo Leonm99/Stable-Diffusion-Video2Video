@@ -100,12 +100,17 @@ class Script(scripts.Script):
 
     def run(self, p, prompts, input, res, keep):
         prompts = sanitize(prompts, 0)
-        for l in prompts.splitlines():
-            prompt_parts = l.split("|", 1)
-            print(prompt_parts[0])
-            print(prompt_parts[1])
-            positive_prompt = prompt_parts[0]
-            negative_prompt = prompt_parts[1]
+        if prompts.find("|") != -1:
+            for l in prompts.splitlines():
+                prompt_parts = l.split("|", 1)
+                print(prompt_parts[0])
+                print(prompt_parts[1])
+                positive_prompt = prompt_parts[0]
+                negative_prompt = prompt_parts[1]
+        else:
+            positive_prompt = prompts
+            negative_prompt = ""
+
         for r in res.splitlines():
             res_parts = r.split(":")
             width = do_round(res_parts[0])
