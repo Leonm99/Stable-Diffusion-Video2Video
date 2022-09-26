@@ -110,6 +110,7 @@ class Script(scripts.Script):
     def run(self, p, prompts, input, res, keep):
 
         prompts = sanitize(prompts, 0)
+
         for l in prompts.splitlines():
             prompt_parts = l.split("|", 1)
             print(prompt_parts[0])
@@ -125,6 +126,9 @@ class Script(scripts.Script):
         path_prompt = sanitize(prompts, 1)
         dateiname = path_prompt[:50]
         print(dateiname)
+
+        dateiname = positive_prompt.replace("()", "")
+
         stamm = os.getcwd() + "\\outputs\\img2img-videos\\"
         if not os.path.exists(stamm):
             os.mkdir(stamm)
@@ -191,33 +195,35 @@ class Script(scripts.Script):
             if state.interrupted:
                 break
 
-            p.color_corrections = initial_color_corrections
+        p.color_corrections = initial_color_corrections
 
-            state.job = f"Frame {i + 1}/{int(loops)}"
+        state.job = f"Frame {i + 1}/{int(loops)}"
 
-            processed = processing.process_images(p)
+        processed = processing.process_images(p)
 
-            if initial_seed is None:
-                initial_seed = processed.seed
-                initial_info = processed.info
+        if initial_seed is None:
+            initial_seed = processed.seed
+            initial_info = processed.info
 
-            init_img = processed.images[0]
+        init_img = processed.images[0]
 
-            p.init_images = [init_img]
-            p.seed = processed.seed
+        p.init_images = [init_img]
+        p.seed = processed.seed
 
-            # Save every seconds worth of frames to the output set displayed in UI
-            if (i % int(30) == 0):
-                all_images.append(init_img)
+        # Save every seconds worth of frames to the output set displayed in UI
+        if (i % int(30) == 0):
+            all_images.append(init_img)
 
-            # Save current image to folder manually, with specific name we can iterate over.
-            init_img.save(os.path.join(unterordner, f"{dateiname}_{i:05}.png"))
+        # Save current image to folder manually, with specific name we can iterate over.
+        init_img.save(os.path.join(
+            unterordner, f"{dateiname}_{i+1:05}.png"))
 
-            processed = Processed(p, all_images, initial_seed, initial_info)
+        processed = Processed(p, all_images, initial_seed, initial_info)
 
         print("All done.")
 
         processed = Processed(p, all_images, initial_seed, initial_info)
         make_mp4(unterordner, dateiname, width,
                  height, keep)
+
         return processed
