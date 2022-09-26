@@ -58,13 +58,19 @@ def make_mp4(filepath, filename, x, y, keep):
     image_path = os.path.join(filepath, f"{str(filename)}_%05d.png")
     mp4_path = os.path.join(filepath, f"{str(filename)}.mp4")
     cmd = [
+
         'ffmpeg',
         '-y',
         '-vcodec', 'png',
+        '-r', str(30),
         '-start_number', str(0),
         '-i', str(image_path),
-        '-vf format=yuv420p',
-        'scale=' + str(x) + ':' + str(y),
+        '-c:v', 'libx264',
+        '-vf',
+        'fps=30',
+        '-pix_fmt', 'yuv420p',
+        '-crf', '17',
+        '-preset', 'veryfast',
         str(mp4_path)
     ]
     process = subprocess.Popen(
@@ -170,6 +176,8 @@ class Script(scripts.Script):
                 full_path = half_path + "0000" + str(i) + ".png"
             p.init_images[0] = Image.open(full_path)
             if state.interrupted:
+                for ifile in glob.glob(filepath + "/*.png"):
+                    os.remove(ifile)
                 break
             p.color_corrections = initial_color_corrections
             state.job = f"Frame {i + 1}/{int(loops)}"
