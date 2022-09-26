@@ -38,7 +38,9 @@ def sanitize(prompt, usage):
 
 
 def dump_frames(filepath, orig_path, x, y):
+
     image_path = os.path.join(filepath, "temp_%05d.png")
+
     cmd = [
         'ffmpeg',
         '-i', orig_path,
@@ -176,8 +178,6 @@ class Script(scripts.Script):
                 full_path = half_path + "0000" + str(i) + ".png"
             p.init_images[0] = Image.open(full_path)
             if state.interrupted:
-                for ifile in glob.glob(filepath + "/*.png"):
-                    os.remove(ifile)
                 break
             p.color_corrections = initial_color_corrections
             state.job = f"Frame {i + 1}/{int(loops)}"
