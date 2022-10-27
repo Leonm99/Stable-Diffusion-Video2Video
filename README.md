@@ -10,7 +10,7 @@ takes video as input, runs it through img2img and then outputs a video with the 
 
 #### 2. download vid2vid.py and put it in stable-diffusion-webui/scripts
 
-#### 3. start/restart the webui and on the img2img tab you will now have vid2vid_video in the scripts dropdown.
+#### 3. start/restart the webui and on the img2img tab you will now have vid2vid in the scripts dropdown.
 
 ---
 
