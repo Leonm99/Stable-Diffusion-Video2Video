@@ -88,6 +88,7 @@ def make_mp4(filepath, filename, x, y, keep):
 class Script(scripts.Script):
     # this gets shown in the scripts drop down
     def title(self):
+        return "vid2vid"
     # makes this script only visible for img2img
 
     def show(self, is_img2img):
