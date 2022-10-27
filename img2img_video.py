@@ -1,5 +1,5 @@
 #
-# Image2Image Video by Leon M.
+# Vid2Vid by Leon M.
 # intended for use with https://github.com/AUTOMATIC1111/stable-diffusion-webui
 # Save this in script folder then restart the UI.
 #
@@ -88,7 +88,6 @@ def make_mp4(filepath, filename, x, y, keep):
 class Script(scripts.Script):
     # this gets shown in the scripts drop down
     def title(self):
-        return "img2img video"
     # makes this script only visible for img2img
 
     def show(self, is_img2img):
@@ -126,7 +125,7 @@ class Script(scripts.Script):
         path_prompt = sanitize(prompts, 1)
         dateiname = path_prompt[:50]
         print(dateiname)
-        stamm = os.getcwd() + "\\outputs\\img2img-videos\\"
+        stamm = os.getcwd() + "\\outputs\\vid2vid\\"
         if not os.path.exists(stamm):
             os.mkdir(stamm)
         unterordner = stamm + dateiname + "\\"
