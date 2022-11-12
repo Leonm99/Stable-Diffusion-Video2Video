@@ -9,7 +9,6 @@ import os
 import random
 import subprocess
 import time
-
 import gradio as gr
 import modules.scripts as scripts
 import numpy as np
@@ -18,13 +17,14 @@ from modules.processing import Processed, process_images
 from modules.sd_samplers import samplers
 from modules.shared import cmd_opts, opts, state
 from PIL import Image, ImageFilter
+from sys import platform
 
 
 def do_round(x, base=64):
     return int(base * round(float(x) / base))
-# remove dumb stuff from prompt
 
 
+# Remove stuff we dont want from prompt.
 def sanitize(prompt, usage):
     if usage == 0:
         whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _ ( ) | .')
@@ -34,9 +34,9 @@ def sanitize(prompt, usage):
         whitelist = set('abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789 _')
         tmp = ''.join(filter(whitelist.__contains__, prompt))
         return tmp.replace(' ', '_')
-# input video gets chopped down to frames
 
 
+# Input video gets chopped down to frames.
 def dump_frames(filepath, orig_path, x, y):
 
     image_path = os.path.join(filepath, "temp_%05d.png")
@@ -53,9 +53,9 @@ def dump_frames(filepath, orig_path, x, y):
     if process.returncode != 0:
         print(stderr)
         raise RuntimeError(stderr)
-# create output video
 
 
+# Mp4 file gets created out of generated images.
 def make_mp4(filepath, filename, x, y, keep):
     image_path = os.path.join(filepath, f"{str(filename)}_%05d.png")
     mp4_path = os.path.join(filepath, f"{str(filename)}.mp4")
@@ -86,26 +86,36 @@ def make_mp4(filepath, filename, x, y, keep):
 
 
 class Script(scripts.Script):
-    # this gets shown in the scripts drop down
+
+# Our script name that gets shown inside the UI dropdown.
     def title(self):
         return "vid2vid"
-    # makes this script only visible for img2img
 
+   
+ # Makes this script only visible in img2img.
     def show(self, is_img2img):
         return is_img2img
-    # ui elements
-
+    
+# Defining UI elements we need.
     def ui(self, is_img2img):
         keep = gr.Checkbox(label='Keep generated pngs?', value=False)
-        res = gr.Textbox(label="Resolution: (Put in like this x:y)",
-                         visible=True, lines=1, value="640:480")
+        res = gr.Textbox(label="Resolution: (Put in like this x:y)", visible=True, lines=1, value="640:480")
         input = gr.File(label="Input Video:", type="file")
-        prompts = gr.Textbox(
-            label="Prompt: (Seperate Positive and Negative by using ' | ') ", visible=True, lines=5, value="")
+        prompts = gr.Textbox(label="Prompt: (Seperate Positive and Negative by using ' | ') ", visible=True, lines=5, value="")
         return [prompts, input, res, keep]
-    # here happens the good stuff
-
+    
+# This runs when "generate" is being clicked.
     def run(self, p, prompts, input, res, keep):
+
+        # Check for platform so we can use the right type of slash.
+        if platform == "linux" or platform == "darwin":
+            slash = "/"
+            print(platform)
+        elif platform == "win32":
+            slash = "\\"
+            print(platform)
+            
+        # Clean up our prompt and get the positive and negative prompt.
         prompts = sanitize(prompts, 0)
         if prompts.find("|") != -1:
             for l in prompts.splitlines():
@@ -117,28 +127,35 @@ class Script(scripts.Script):
         else:
             positive_prompt = prompts
             negative_prompt = ""
-
         for r in res.splitlines():
             res_parts = r.split(":")
             width = do_round(res_parts[0])
             height = do_round(res_parts[1])
 
-        path_prompt = sanitize(prompts, 1)
-        dateiname = path_prompt[:50]
-        print(dateiname)
-        stamm = os.getcwd() + "\\outputs\\vid2vid\\"
-        if not os.path.exists(stamm):
-            os.mkdir(stamm)
-        unterordner = stamm + dateiname + "\\"
-        if not os.path.exists(unterordner):
-            os.mkdir(unterordner)
-        half_path = unterordner + "temp_"
+        # Use our prompt as filename.
+        file_name = positive_prompt[:50]
+        print(file_name)
+
+        # Get the current path and add our folder to it we want to output to appear in.
+        root_path = os.getcwd() + slash + "outputs" + slash + "vid2vid" + slash
+        if not os.path.exists(root_path):
+            os.mkdir(root_path)
+
+        # Define a subfolder in our folder to seperate different prompts
+        sub_folder = root_path + file_name + "slash"
+        if not os.path.exists(sub_folder):
+            os.mkdir(sub_folder)
+
+        half_path = sub_folder + "temp_"
+
         # extract frames from input video
-        dump_frames(unterordner, input.name,
-                    width, height)
+        dump_frames(sub_folder, input.name, width, height)
+
         # get fps by literally counting the images... i know this is stupid
-        loops = len([name for name in os.listdir(unterordner)
-                     if os.path.isfile(os.path.join(unterordner, name))])
+        loops = len([name for name in os.listdir(sub_folder)
+
+        if os.path.isfile(os.path.join(sub_folder, name))])
+
         p.do_not_save_samples = True
         p.do_not_save_grid = True
         processing.fix_seed(p)
@@ -156,11 +173,12 @@ class Script(scripts.Script):
         state.job_count = int(loops) * batch_count
         p.width = width
         p.height = height
-        p.init_images[0] = Image.open(unterordner + "temp_00001.png")
+        p.init_images[0] = Image.open(sub_folder + "temp_00001.png")
         initial_color_corrections = [
             processing.setup_color_correction(p.init_images[0])]
         p.prompt = prompts
         p.negative_prompt = negative_prompt or ""
+
         for i in range(int(loops)):
             number_string = str(i)
             if len(number_string) > 4:
@@ -178,23 +196,31 @@ class Script(scripts.Script):
             p.init_images[0] = Image.open(full_path)
             if state.interrupted:
                 break
+
             p.color_corrections = initial_color_corrections
             state.job = f"Frame {i + 1}/{int(loops)}"
             processed = processing.process_images(p)
+
             if initial_seed is None:
                 initial_seed = processed.seed
                 initial_info = processed.info
+
             init_img = processed.images[0]
             p.init_images = [init_img]
             p.seed = processed.seed
+
             # Save every seconds worth of frames to the output set displayed in UI
             if (i % int(30) == 0):
                 all_images.append(init_img)
+
             # Save current image to folder manually, with specific name we can iterate over.
-            init_img.save(os.path.join(unterordner, f"{dateiname}_{i:05}.png"))
+            init_img.save(os.path.join(sub_folder, f"{file_name}_{i:05}.png"))
             processed = Processed(p, all_images, initial_seed, initial_info)
+
         print("All done.")
         processed = Processed(p, all_images, initial_seed, initial_info)
-        make_mp4(unterordner, dateiname, width,
-                 height, keep)
+
+        # Generate a mp4 of our generated frames.
+        make_mp4(sub_folder, file_name, width, height, keep)
+
         return processed
