@@ -142,7 +142,7 @@ class Script(scripts.Script):
             os.mkdir(root_path)
 
         # Define a subfolder in our folder to seperate different prompts
-        sub_folder = root_path + file_name + "slash"
+        sub_folder = root_path + file_name + slash
         if not os.path.exists(sub_folder):
             os.mkdir(sub_folder)
 
