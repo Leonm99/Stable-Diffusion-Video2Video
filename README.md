@@ -14,5 +14,5 @@ takes video as input, runs it through img2img and then outputs a video with the 
 
 ---
 
-a lower diffusion value is recommended but feel free to tweak to your likings
+a lower denoising strengt value is recommended but feel free to tweak to your likings
 
