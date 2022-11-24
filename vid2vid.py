@@ -136,10 +136,15 @@ class Script(scripts.Script):
         file_name = positive_prompt[:50]
         print(file_name)
 
-        # Get the current path and add our folder to it we want to output to appear in.
+        # Get the current path and check if outputs folder exist if not create it and then add our root folder where outputs will be stored.
+        outputs_path = os.getcwd() + slash + "outputs" + slash 
         root_path = os.getcwd() + slash + "outputs" + slash + "vid2vid" + slash
-        if not os.path.exists(root_path):
+        if not os.path.exists(outputs_path) :
+            os.mkdir(outputs_path)
             os.mkdir(root_path)
+        elif not os.path.exists(root_path):
+            os.mkdir(root_path)
+
 
         # Define a subfolder in our folder to seperate different prompts
         sub_folder = root_path + file_name + slash
