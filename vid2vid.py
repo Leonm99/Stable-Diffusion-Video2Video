@@ -99,7 +99,7 @@ class Script(scripts.Script):
 # Defining UI elements we need.
     def ui(self, is_img2img):
         keep = gr.Checkbox(label='Keep generated pngs?', value=False)
-        res = gr.Textbox(label="Resolution: (Put in like this x:y)", visible=True, lines=1, value="640:480")
+        res = gr.Textbox(label="Resolution: (Put in like this x:y)", visible=True, lines=1, value="720:576")
         input = gr.File(label="Input Video:", type="file")
         prompts = gr.Textbox(label="Prompt: (Seperate Positive and Negative by using ' | ') ", visible=True, lines=5, value="")
         return [prompts, input, res, keep]
