@@ -56,9 +56,30 @@ def dump_frames(filepath, orig_path, x, y):
 
 
 # Mp4 file gets created out of generated images.
-def make_mp4(filepath, filename, x, y, keep):
+def make_mp4(filepath, filename, x, y, keep, orig_path):
+    # ffprobe -v 0 -of csv=p=0 -select_streams v:0 -show_entries stream=r_frame_rate infile
+    
+    cmd = [
+        'ffprobe',
+        '-v', str(0),
+        '-of', 'csv=p=' + str(0),
+        '-select_streams', 'v:'+str(0),
+        '-show_entries', 'stream=r_frame_rate',
+        orig_path
+    ]
+    process = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    print(str(stdout))
+    if process.returncode != 0:
+        print(stderr)
+        raise RuntimeError(stderr)
+    framerate = stdout.decode("utf-8") 
+    print(framerate)
+
     image_path = os.path.join(filepath, f"{str(filename)}_%05d.png")
     mp4_path = os.path.join(filepath, f"{str(filename)}.mp4")
+    print(framerate)
     cmd = [
 
         'ffmpeg',
@@ -72,6 +93,7 @@ def make_mp4(filepath, filename, x, y, keep):
         '-pix_fmt', 'yuv420p',
         '-crf', '17',
         '-preset', 'veryfast',
+        '-filter:v', 'fps=' + framerate,
         str(mp4_path)
     ]
     process = subprocess.Popen(
@@ -226,6 +248,6 @@ class Script(scripts.Script):
         processed = Processed(p, all_images, initial_seed, initial_info)
 
         # Generate a mp4 of our generated frames.
-        make_mp4(sub_folder, file_name, width, height, keep)
+        make_mp4(sub_folder, file_name, width, height, keep, input.name)
 
         return processed
