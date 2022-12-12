@@ -6,7 +6,7 @@ takes video as input, runs it through img2img and then outputs a video with the 
 ---
 
 # Installation
-#### 1. [Download FFMPEG](https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z) just put the ffmpeg.exe in the stable-diffusion-webui folder or install it like shown [here.](https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/)
+#### 1. [Download FFMPEG](https://www.gyan.dev/ffmpeg/builds/ffmpeg-git-full.7z) just put the ffmpeg.exe and the ffprobe.exe in the stable-diffusion-webui folder or install it like shown [here.](https://www.geeksforgeeks.org/how-to-install-ffmpeg-on-windows/) Edit: Make sure you have ffprobe as well with either method mentioned.
 
 #### 2. download vid2vid.py and put it in the scripts folder.
 
