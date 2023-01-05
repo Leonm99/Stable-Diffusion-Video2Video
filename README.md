@@ -1,3 +1,28 @@
+
+# This Repo is now discontinued.
+# Someone did it better than me so check it out here: https://github.com/Filarius/stable-diffusion-webui/blob/master/scripts/vid2vid.py
+---
+---
+---
+---
+---
+---
+---
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Stable-Diffusion-vid2vid
 
 a simple script addon for https://github.com/AUTOMATIC1111/stable-diffusion-webui
