@@ -1,6 +1,6 @@
 
 # This Repo is now discontinued.
-# Someone did it better than me so check it out here: https://github.com/Filarius/stable-diffusion-webui/blob/master/scripts/vid2vid.py
+# Someone did it better than me so check it out here: https://github.com/Filarius/video2video
 ---
 ---
 ---
